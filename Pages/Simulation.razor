@@ -1,0 +1,30 @@
+﻿@page "/simulation"
+
+<PageTitle>Simulation</PageTitle>
+
+<h1>Simulation</h1>
+
+<p role="status">Momentane Parker: @parker</p>
+
+<button class="btn btn-primary" @onclick="addParker">Einfahren</button>
+<button class="btn btn-primary" @onclick="subtractParker">Ausfahren</button>
+
+@code {
+    private int parker = 0;
+
+    private void addParker()
+    {
+        if (parker < 180)
+        {
+            parker++;
+        }
+    }
+
+    private void subtractParker()
+    {
+        if (parker > 0)
+        {
+            parker--;
+        }
+    }
+}
