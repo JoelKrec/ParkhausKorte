@@ -29,3 +29,22 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+
+int aP = 0;//alleParker
+int fP = 0;//freieparkplätze
+int fDP = 0;//freieDauerParkplätze
+int kP = 0;//kurzparker
+int dP = 0;//dauerparker
+const int mP = 180 - 4;//MaximaleParkplätze
+const int rDP = 40;//reservierteDauerparkplätze
+
+if(dP > rDP)
+{
+    fP = mP - aP;
+}
+else
+{
+    fP = mP - 40 - kP;
+}
+
+fDP = mP - aP;
