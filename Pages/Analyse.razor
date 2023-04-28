@@ -1,15 +1,15 @@
 ﻿@page "/analyse"
 
-<PageTitle>Weather forecast</PageTitle>
+<PageTitle>Analyse</PageTitle>
 
 @using ParkhausKorte.Data
-@inject WeatherForecastService ForecastService
+@inject ParkingGarage ParkingGarage
 
-<h1>Weather forecast</h1>
+<h1>Analyse</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
+<p>Hier können Sie die momentanen Parker einsehen und die Aktionen der Simulation überprüfen.</p>
 
-@if (forecasts == null)
+@if (ParkingGarage == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -18,31 +18,51 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>Verfügbare Plätze</th>
+                <th>Reservierte Dauerplätze</th>
+                <th>Pufferplätze</th>
+                <th>Maximale Plätze</th>
+                <th>Frei Plätze</th>
+                <th>Momentane Parker</th>
+                <th>Momentane Kurzparker</th>
+                <th>Momentane Dauerparker</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
+            <tr>
+                <td>@parkSpaces</td>
+                <td>@reservedSeasonSpaces</td>
+                <td>@bufferSpaces</td>
+                <td>@maxParker</td>
+                <td>@freeSpaces</td>
+                <td>@currentParkers</td>
+                <td>@currentNormalParkers</td>
+                <td>@currentSeasonParkers</td>
+            </tr>
         </tbody>
     </table>
 }
 
-@code {
-    private WeatherForecast[]? forecasts;
+@code
+{
+    int parkSpaces = 0;
+    int maxParker = 0;
+    int bufferSpaces = 0;
+    int reservedSeasonSpaces = 0;
+    int freeSpaces = 0;
+    int currentParkers = 0;
+    int currentNormalParkers = 0;
+    int currentSeasonParkers = 0;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        freeSpaces = ParkingGarage.GetFreeSpaces();
+        parkSpaces = ParkingGarage.parkSpaces;
+        maxParker = ParkingGarage.maxParker;
+        currentParkers = ParkingGarage.currentParkers;
+        currentNormalParkers = ParkingGarage.currentNormalParkers;
+        currentSeasonParkers = ParkingGarage.currentSeasonParkers;
+        reservedSeasonSpaces = ParkingGarage.reservedSeasonParkSpaces;
+        bufferSpaces = ParkingGarage.parkSpaceBuffer;
     }
 }
