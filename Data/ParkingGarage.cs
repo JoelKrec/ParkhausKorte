@@ -1,21 +1,22 @@
 namespace ParkhausKorte.Data;
 
+using ParkhausKorte.DbService;
+
 public class ParkingGarage
 {
-    public readonly int maxParker;
-    public readonly int reservedSeasonParkSpaces;
-    public readonly int parkSpaceBuffer;
-    public readonly int parkSpaces;
-    public int currentParkers;
-    public int currentNormalParkers;
-    public int currentSeasonParkers;
+    public ParkingGarageService parkingGarageService;
+    public readonly int availableParkingSpaces;
+    public readonly int reservedSeasonParkingSpaces;
+    public readonly int parkingSpaceBuffer;
+    public readonly int totalParkingSpaces;
 
-    public ParkingGarage(int parkSpaces = 180, int parkSpaceBuffer = 4, int reservedSeasonParkSpaces = 40)
+    public ParkingGarage(ParkingGarageContext _parkingGarageContext)
     {
-        this.parkSpaces = parkSpaces;
-        this.parkSpaceBuffer = parkSpaceBuffer;
-        this.maxParker = parkSpaces - parkSpaceBuffer;
-        this.reservedSeasonParkSpaces = reservedSeasonParkSpaces;
+        this.parkingGarageService = new ParkingGarageService(_parkingGarageContext);
+        this.totalParkingSpaces = this.parkingGarageService.getMaxParkingSpaces();
+        this.parkingSpaceBuffer = this.parkingGarageService.getParkingSpaceBuffer();
+        this.availableParkingSpaces = this.totalParkingSpaces - this.parkingSpaceBuffer;
+        this.reservedSeasonParkingSpaces = this.parkingGarageService.getReservedSeasonParkingSpaces();
     }
 
     public int GetParkersOfType(ParkerType parkerType)
@@ -25,13 +26,13 @@ public class ParkingGarage
         switch (parkerType)
         {
             case ParkerType.normal:
-                parkersToReturn = currentNormalParkers;
+                parkersToReturn = this.parkingGarageService.getCurrentNormalParkers();
                 break;
             case ParkerType.season:
-                parkersToReturn = currentSeasonParkers;
+                parkersToReturn = this.parkingGarageService.getCurrentSeasonParkers();
                 break;
             case ParkerType.all:
-                parkersToReturn = currentParkers;
+                parkersToReturn = this.parkingGarageService.getCurrentParkers();
                 break;
             default:
                 parkersToReturn = -1;
@@ -45,6 +46,7 @@ public class ParkingGarage
     {
         bool addingSuccessful = false;
         int freeSpaces = 0;
+        int currentParkers = this.parkingGarageService.getCurrentParkers();
 
         switch (parkerType)
         {
@@ -53,15 +55,15 @@ public class ParkingGarage
 
                 if(freeSpaces > 0)
                 {
-                    this.currentNormalParkers++;
+                    this.parkingGarageService.addNormalParker();
                     addingSuccessful = true;
                 }
                 break;
             case ParkerType.season:
-                freeSpaces = this.maxParker - this.currentParkers;
+                freeSpaces = this.availableParkingSpaces - currentParkers;
                 if(freeSpaces > 0)
                 {
-                    this.currentSeasonParkers++;
+                    this.parkingGarageService.addSeasonParker();
                     addingSuccessful = true;
                 }
                 break;
@@ -69,8 +71,6 @@ public class ParkingGarage
             default:
                 break;
         }
-
-        this.currentParkers = this.currentNormalParkers + this.currentSeasonParkers;
 
         return addingSuccessful;
     }
@@ -80,31 +80,48 @@ public class ParkingGarage
         switch(parkerType)
         {
             case ParkerType.normal:
-                this.currentNormalParkers--;
+                this.parkingGarageService.removeNormalParker();
                 break;
             case ParkerType.season:
-                this.currentSeasonParkers--;
+                this.parkingGarageService.removeSeasonParker();
                 break;
             case ParkerType.all:
             default:
                 break;
         }
-
-        this.currentParkers = this.currentNormalParkers + this.currentSeasonParkers;
     }
 
     public int GetFreeSpaces()
     {
         int freeSpaces = 0;
-        if(this.currentSeasonParkers > this.reservedSeasonParkSpaces)
+        int currentSeasonParkers = this.parkingGarageService.getCurrentSeasonParkers();
+        int currentNormalParkers = this.parkingGarageService.getCurrentNormalParkers();
+        int currentParkers = this.parkingGarageService.getCurrentParkers();
+
+        if(currentSeasonParkers > this.reservedSeasonParkingSpaces)
         {
-            freeSpaces = this.maxParker - currentParkers;
+            freeSpaces = this.availableParkingSpaces - currentParkers;
         }
         else
         {
-            freeSpaces = this.maxParker - 40 - this.currentNormalParkers;
+            freeSpaces = this.availableParkingSpaces - 40 - currentNormalParkers;
         }
         return freeSpaces;
+    }
+
+    public int getCurrentSeasonParkers()
+    {
+        return this.parkingGarageService.getCurrentSeasonParkers();
+    }
+
+    public int getCurrentNormalParkers()
+    {
+        return this.parkingGarageService.getCurrentNormalParkers();
+    }
+
+    public int getCurrentParkers()
+    {
+        return this.parkingGarageService.getCurrentParkers();
     }
 }
 

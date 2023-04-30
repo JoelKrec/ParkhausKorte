@@ -26,7 +26,7 @@
 
     private void subtractNormalParker()
     {
-        if (ParkingGarage.currentNormalParkers > 0)
+        if (ParkingGarage.getCurrentNormalParkers() > 0)
         {
             ParkingGarage.RemoveParkerOfType(ParkerType.normal);
         }
@@ -40,7 +40,7 @@
 
     private void subtractSeasonParker()
     {
-        if (ParkingGarage.currentSeasonParkers > 0)
+        if (ParkingGarage.getCurrentSeasonParkers() > 0)
         {
             ParkingGarage.RemoveParkerOfType(ParkerType.season);
         }

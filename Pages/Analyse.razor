@@ -22,7 +22,7 @@ else
                 <th>Reservierte Dauerplätze</th>
                 <th>Pufferplätze</th>
                 <th>Maximale Plätze</th>
-                <th>Frei Plätze</th>
+                <th>Freie Plätze</th>
                 <th>Momentane Parker</th>
                 <th>Momentane Kurzparker</th>
                 <th>Momentane Dauerparker</th>
@@ -30,10 +30,10 @@ else
         </thead>
         <tbody>
             <tr>
-                <td>@parkSpaces</td>
+                <td>@parkingSpaces</td>
                 <td>@reservedSeasonSpaces</td>
                 <td>@bufferSpaces</td>
-                <td>@maxParker</td>
+                <td>@maxParkers</td>
                 <td>@freeSpaces</td>
                 <td>@currentParkers</td>
                 <td>@currentNormalParkers</td>
@@ -45,8 +45,8 @@ else
 
 @code
 {
-    int parkSpaces = 0;
-    int maxParker = 0;
+    int parkingSpaces = 0;
+    int maxParkers = 0;
     int bufferSpaces = 0;
     int reservedSeasonSpaces = 0;
     int freeSpaces = 0;
@@ -57,12 +57,12 @@ else
     protected override void OnInitialized()
     {
         freeSpaces = ParkingGarage.GetFreeSpaces();
-        parkSpaces = ParkingGarage.parkSpaces;
-        maxParker = ParkingGarage.maxParker;
-        currentParkers = ParkingGarage.currentParkers;
-        currentNormalParkers = ParkingGarage.currentNormalParkers;
-        currentSeasonParkers = ParkingGarage.currentSeasonParkers;
-        reservedSeasonSpaces = ParkingGarage.reservedSeasonParkSpaces;
-        bufferSpaces = ParkingGarage.parkSpaceBuffer;
+        parkingSpaces = ParkingGarage.availableParkingSpaces;
+        maxParkers = ParkingGarage.totalParkingSpaces;
+        currentParkers = ParkingGarage.getCurrentParkers();
+        currentNormalParkers = ParkingGarage.getCurrentNormalParkers();
+        currentSeasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        reservedSeasonSpaces = ParkingGarage.reservedSeasonParkingSpaces;
+        bufferSpaces = ParkingGarage.parkingSpaceBuffer;
     }
 }
