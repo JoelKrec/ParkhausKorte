@@ -8,7 +8,8 @@
 
 <h1>Simulation</h1>
 
-<p role="status">Momentane freie Plätze: @freeSpaces</p>
+<p role="status">Momentane freie beliebige Plätze: @freeArbitrarySpaces</p>
+<p role="status">Momentane freie Dauerparker-Plätze: @freeSeasonSpaces</p>
 
 <button class="btn btn-primary" @onclick="addNormalParker">Kurzparker einfahren lassen</button>
 <button class="btn btn-primary" @onclick="subtractNormalParker">Kurzparker ausfahren lassen</button>
@@ -16,12 +17,13 @@
 <button class="btn btn-primary" @onclick="subtractSeasonParker">Dauerparker ausfahren lassen</button>
 
 @code {
-    int freeSpaces = 0;
+    int freeArbitrarySpaces = 0;
+    int freeSeasonSpaces = 0;
 
     private void addNormalParker()
     {
         ParkingGarage.AddParkerOfType(ParkerType.normal);
-        GetFreeSpaces();
+        UpdateValues();
     }
 
     private void subtractNormalParker()
@@ -30,12 +32,12 @@
         {
             ParkingGarage.RemoveParkerOfType(ParkerType.normal);
         }
-        GetFreeSpaces();
+        UpdateValues();
     }
     private void addSeasonParker()
     {
         ParkingGarage.AddParkerOfType(ParkerType.season);
-        GetFreeSpaces();
+        UpdateValues();
     }
 
     private void subtractSeasonParker()
@@ -44,17 +46,30 @@
         {
             ParkingGarage.RemoveParkerOfType(ParkerType.season);
         }
-        GetFreeSpaces();
+        UpdateValues();
     }
 
-    private int GetFreeSpaces() 
+    private int GetFreeArbitrarySpaces() 
     {
-        freeSpaces = ParkingGarage.GetFreeSpaces();
-        return freeSpaces;
+        freeArbitrarySpaces = ParkingGarage.GetFreeSpaces();
+        return freeArbitrarySpaces;
+    }
+
+    private int GetFreeSeasonSpaces() 
+    {
+        freeSeasonSpaces = ParkingGarage.GetFreeSpaces() + (ParkingGarage.parkingGarageService.getReservedSeasonParkingSpaces() - ParkingGarage.getCurrentSeasonParkers());
+        return freeSeasonSpaces;
     }
 
     protected override void OnInitialized()
     {
-        freeSpaces = GetFreeSpaces();
+        freeArbitrarySpaces = GetFreeArbitrarySpaces();
+        freeSeasonSpaces = GetFreeSeasonSpaces();
+    }
+
+    protected void UpdateValues()
+    {
+        GetFreeArbitrarySpaces();
+        GetFreeSeasonSpaces();
     }
 }
