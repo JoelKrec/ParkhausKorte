@@ -19,7 +19,7 @@ public class ParkingGarageService
     */
     public int getMaxParkingSpaces()
     {
-        return this.parkingGarageContext.ParkingGarage.Select(u => u.maxParkingSpaces).SingleOrDefault();
+        return this.parkingGarageContext.parkinggarage.Select(u => u.maxParkingSpaces).SingleOrDefault();
     }
 
     /*
@@ -27,7 +27,7 @@ public class ParkingGarageService
     */
     public int getReservedSeasonParkingSpaces()
     {
-        return this.parkingGarageContext.ParkingGarage.Select(u => u.reservedSeasonParkingSpaces).SingleOrDefault();
+        return this.parkingGarageContext.parkinggarage.Select(u => u.reservedSeasonParkingSpaces).SingleOrDefault();
     }
 
     /*
@@ -35,7 +35,7 @@ public class ParkingGarageService
     */
     public int getParkingSpaceBuffer()
     {
-        return this.parkingGarageContext.ParkingGarage.Select(u => u.parkingSpaceBuffer).SingleOrDefault();
+        return this.parkingGarageContext.parkinggarage.Select(u => u.parkingSpaceBuffer).SingleOrDefault();
     }
 
 /*
@@ -43,7 +43,7 @@ public class ParkingGarageService
     */
     public int getCurrentNormalParkers()
     {
-        return this.parkingGarageContext.Parkers.Count(w => w.ticket == ParkerEntity.TicketType.short_term);
+        return this.parkingGarageContext.parkers.Count(w => w.ticket == ParkerEntity.TicketType.short_term);
     }
 
     /*
@@ -51,7 +51,7 @@ public class ParkingGarageService
     */
     public int getCurrentSeasonParkers()
     {
-        return this.parkingGarageContext.Parkers.Count(w => w.ticket == ParkerEntity.TicketType.season);
+        return this.parkingGarageContext.parkers.Count(w => w.ticket == ParkerEntity.TicketType.season);
     }
 
     /*
@@ -59,7 +59,7 @@ public class ParkingGarageService
     */
     public int getCurrentParkers()
     {
-        return this.parkingGarageContext.Parkers.Count();
+        return this.parkingGarageContext.parkers.Count();
     }
 
     /*
@@ -93,7 +93,7 @@ public class ParkingGarageService
         this.parkingGarageContext.Add(parker);
         this.parkingGarageContext.SaveChanges();
 
-        return this.parkingGarageContext.Parkers
+        return this.parkingGarageContext.parkers
             .Where(parkers => parkers.Id == parker.Id)
             .Select(parkers => parkers.numberPlate)
             .SingleOrDefault() ?? "";
@@ -122,18 +122,18 @@ public class ParkingGarageService
     private void removeParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
     {
         if (_numberPlate == "") {                
-            int longestNormalParkerId = this.parkingGarageContext.Parkers
+            int longestNormalParkerId = this.parkingGarageContext.parkers
                 .Where(parkers => parkers.ticket == ticketType)
                 .OrderBy(parkers => parkers.entryTime)
                 .Select(parkers => parkers.Id)
                 .FirstOrDefault();
 
             this.parkingGarageContext.Remove(
-                this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId)
+                this.parkingGarageContext.parkers.Single(parkers => parkers.Id == longestNormalParkerId)
             );
         } else {
             this.parkingGarageContext.Remove(
-                this.parkingGarageContext.Parkers.Single(parkers => parkers.numberPlate == _numberPlate)
+                this.parkingGarageContext.parkers.Single(parkers => parkers.numberPlate == _numberPlate)
             );
         }
 

@@ -23,6 +23,6 @@ public class ParkingGarageContext : DbContext
             .Property(u => u.numberPlate).IsOptional();*/
     }
     //entities
-    public DbSet<ParkingGarageEntity> ParkingGarage { get; set; }
-    public DbSet<ParkerEntity> Parkers { get; set; }
+    public DbSet<ParkingGarageEntity> parkinggarage { get; set; }
+    public DbSet<ParkerEntity> parkers { get; set; }
 }
