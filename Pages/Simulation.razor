@@ -1,0 +1,101 @@
+﻿@page "/simulation"
+
+
+@using ParkhausKorte.Data
+@inject ParkingGarage ParkingGarage
+
+<PageTitle>Simulation</PageTitle>
+
+<h1>Simulation</h1>
+
+<p role="status">Momentane freie beliebige Plätze: @freeArbitrarySpaces</p>
+<p role="status">Momentane freie Dauerparker-Plätze: @freeSeasonSpaces</p>
+
+<button class="btn btn-primary" @onclick="addNormalParker" style="@(freeArbitrarySpaces > 0 ? "" : "pointer-events:none;filter:brightness(0.6)")">Kurzparker einfahren lassen</button>
+<button class="btn btn-primary" @onclick="subtractNormalParker" style="@(normalParkers > 0 ? "" : "pointer-events:none;filter:brightness(0.6)")">Kurzparker ausfahren lassen</button>
+<button class="btn btn-primary" @onclick="addSeasonParker" style="@(freeSeasonSpaces > 0 ? "" : "pointer-events:none;filter:brightness(0.6)")">Dauerparker einfahren lassen</button>
+<button class="btn btn-primary" @onclick="subtractSeasonParker" style="@(seasonParkers > 0 ? "" : "pointer-events:none;filter:brightness(0.6)")">Dauerparker ausfahren lassen</button>
+
+@code {
+    int freeArbitrarySpaces = 0;
+    int freeSeasonSpaces = 0;
+    int normalParkers = 0;
+    int seasonParkers = 0;
+
+    private void addNormalParker()
+    {
+        if (freeArbitrarySpaces > 0) {
+            ParkingGarage.AddParkerOfType(ParkerType.normal);
+            UpdateValues();
+        }
+    }
+
+    private void subtractNormalParker()
+    {
+        if (ParkingGarage.getCurrentNormalParkers() > 0)
+        {
+            ParkingGarage.RemoveParkerOfType(ParkerType.normal);
+        }
+        UpdateValues();
+    }
+    private void addSeasonParker()
+    {
+        if (freeSeasonSpaces > 0) {
+            ParkingGarage.AddParkerOfType(ParkerType.season);
+            UpdateValues();
+        }
+    }
+
+    private void subtractSeasonParker()
+    {
+        if (ParkingGarage.getCurrentSeasonParkers() > 0)
+        {
+            ParkingGarage.RemoveParkerOfType(ParkerType.season);
+        }
+        UpdateValues();
+    }
+
+    private int GetFreeArbitrarySpaces() 
+    {
+        freeArbitrarySpaces = ParkingGarage.GetFreeSpaces();
+        return freeArbitrarySpaces;
+    }
+
+    private int GetFreeSeasonSpaces() 
+    {
+        int reservedSeasonParkingSpaces = ParkingGarage.parkingGarageService.getReservedSeasonParkingSpaces();
+        int seasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        if (seasonParkers < reservedSeasonParkingSpaces) {
+            freeSeasonSpaces = ParkingGarage.GetFreeSpaces() + (reservedSeasonParkingSpaces - seasonParkers);
+        } else {
+            freeSeasonSpaces = ParkingGarage.GetFreeSpaces();
+        }
+        
+        return freeSeasonSpaces;
+    }
+
+    private int GetNormalParkers() 
+    {
+        normalParkers = ParkingGarage.getCurrentNormalParkers();
+        return normalParkers;
+    }
+
+    private int GetSeasonParkers() 
+    {
+        seasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        return seasonParkers;
+    }
+
+    protected override void OnInitialized()
+    {
+        UpdateValues();
+    }
+
+    protected void UpdateValues()
+    {
+        GetFreeArbitrarySpaces();
+        GetFreeSeasonSpaces();
+        GetNormalParkers();
+        GetSeasonParkers();
+    }
+}

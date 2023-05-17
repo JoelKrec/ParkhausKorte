@@ -1,0 +1,68 @@
+﻿@page "/analyse"
+
+<PageTitle>Analyse</PageTitle>
+
+@using ParkhausKorte.Data
+@inject ParkingGarage ParkingGarage
+
+<h1>Analyse</h1>
+
+<p>Hier können Sie die momentanen Parker einsehen und die Aktionen der Simulation überprüfen.</p>
+
+@if (ParkingGarage == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Verfügbare Plätze</th>
+                <th>Reservierte Dauerplätze</th>
+                <th>Pufferplätze</th>
+                <th>Maximale Plätze</th>
+                <th>Freie Plätze</th>
+                <th>Momentane Parker</th>
+                <th>Momentane Kurzparker</th>
+                <th>Momentane Dauerparker</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@parkingSpaces</td>
+                <td>@reservedSeasonSpaces</td>
+                <td>@bufferSpaces</td>
+                <td>@maxParkers</td>
+                <td>@freeSpaces</td>
+                <td>@currentParkers</td>
+                <td>@currentNormalParkers</td>
+                <td>@currentSeasonParkers</td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code
+{
+    int parkingSpaces = 0;
+    int maxParkers = 0;
+    int bufferSpaces = 0;
+    int reservedSeasonSpaces = 0;
+    int freeSpaces = 0;
+    int currentParkers = 0;
+    int currentNormalParkers = 0;
+    int currentSeasonParkers = 0;
+
+    protected override void OnInitialized()
+    {
+        freeSpaces = ParkingGarage.GetFreeSpaces();
+        parkingSpaces = ParkingGarage.availableParkingSpaces;
+        maxParkers = ParkingGarage.totalParkingSpaces;
+        currentParkers = ParkingGarage.getCurrentParkers();
+        currentNormalParkers = ParkingGarage.getCurrentNormalParkers();
+        currentSeasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        reservedSeasonSpaces = ParkingGarage.reservedSeasonParkingSpaces;
+        bufferSpaces = ParkingGarage.parkingSpaceBuffer;
+    }
+}

@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ParkhausKorte.Data;
+using ParkhausKorte.DbService;
+using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
+registerServices(builder.Services);
 
 var app = builder.Build();
 
@@ -29,3 +30,25 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+
+
+static void registerServices(IServiceCollection services)
+{
+    services.AddRazorPages();
+    services.AddServerSideBlazor();
+    services.AddScoped<ParkingGarage>();
+
+    // Connect to database.
+    var connectionString = "server=127.0.0.1;user=db_user;password=db_password;database=parkhaus";
+    var serverVersion = ServerVersion.AutoDetect(connectionString);//new MariaDbServerVersion(new Version(10, 10, 3));
+
+    services.AddDbContext<ParkingGarageContext>(
+        dbContextOptions => dbContextOptions
+            .UseMySql(connectionString, serverVersion)
+            // The following three options help with debugging, but should
+            // be changed or removed for production.
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors()
+    );
+}
