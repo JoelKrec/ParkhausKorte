@@ -39,7 +39,7 @@ static void registerServices(IServiceCollection services)
     services.AddScoped<ParkingGarage>();
 
     // Connect to database.
-    var connectionString = "server=127.0.0.1;user=db_user;password=db_password;database=parkhaus";
+    var connectionString = "server=172.17.0.1;port=49153;user=db_user;password=db_password;database=parkhaus";
     var serverVersion = ServerVersion.AutoDetect(connectionString);//new MariaDbServerVersion(new Version(10, 10, 3));
 
     services.AddDbContext<ParkingGarageContext>(
