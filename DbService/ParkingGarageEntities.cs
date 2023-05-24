@@ -23,3 +23,9 @@ public class ParkerEntity
     public Nullable<DateTime> exitTime { get; set; }
     public TicketType ticket { get; set; }
 }
+
+public class ParkingSpotEntity
+{
+    public int Id { get; set; }
+    public int parkerId { get; set; }
+}

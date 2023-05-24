@@ -9,6 +9,7 @@ public class ParkingGarage
     public readonly int reservedSeasonParkingSpaces;
     public readonly int parkingSpaceBuffer;
     public readonly int totalParkingSpaces;
+    public readonly float parkingCostPerMinute = 1; //€
 
     public ParkingGarage(ParkingGarageContext _parkingGarageContext)
     {
@@ -122,6 +123,10 @@ public class ParkingGarage
     public int getCurrentParkers()
     {
         return this.parkingGarageService.getCurrentParkers();
+    }
+
+    public float getParkingCost(int parkerId) {
+        return this.parkingGarageService.getParkingDurationMinutes(parkerId) * this.parkingCostPerMinute;
     }
 }
 
