@@ -20,6 +20,6 @@ public class ParkerEntity
     public int Id { get; set; }
     public string numberPlate { get; set; }
     public DateTime entryTime { get; set; }
-    public DateTime exitTime { get; set; }
+    public Nullable<DateTime> exitTime { get; set; }
     public TicketType ticket { get; set; }
 }
