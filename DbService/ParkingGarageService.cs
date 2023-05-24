@@ -180,6 +180,7 @@ public class ParkingGarageService
     */
     public int getParkingDurationMinutes(int parkerId)
     {
+        // TODO
         return 0;
     }
 }
