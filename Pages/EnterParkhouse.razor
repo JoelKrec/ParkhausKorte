@@ -6,4 +6,44 @@
 
 <PageTitle>Einfahrt</PageTitle>
 
+<style>
+    .maschine{
+        width: 500px;
+        height: 600px;
+        border: 2px solid black;
+        background-color: grey;
+  		padding: 40px;
+    }
+    .screen{
+        width: 200px;
+        height: 100px;
+        left: 50%;
+        background-color: black;
+    }
+    .buttonEinfahrt{
+        width: 200px;
+        height: 100px;
+        border: 2px solid black;
+    }
+    .grid-container {
+        margin-top: 60%;
+        display: grid;
+        grid-template-columns: auto auto;
+    }
+    .grid-item {
+        background-color: black;
+        padding: 20px;
+        font-size: 30px;
+        text-align: center;
+    }
+</style>
+
 <h1>Einfahrt</h1>
+
+<div class="maschine">
+    <div class="screen" style="margin-left: 100px;"></div>
+    <div class="grid-container">
+        <button class="grid-iteem buttonEinfahrt">Dauerparker</button>
+        <button class="grid-iteem buttonEinfahrt">Kurzparker</button>
+    </div>
+</div>
