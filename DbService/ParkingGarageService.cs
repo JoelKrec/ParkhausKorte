@@ -55,7 +55,7 @@ public class ParkingGarageService
     {
         return this.parkingGarageContext.Parkers
             .Where(parkers => parkers.exitTime == null)
-            .Count(w => w.ticket == ParkerEntity.TicketType.season);
+            .Count(parkers => parkers.ticket == ParkerEntity.TicketType.season);
     }
 
     /*
@@ -110,22 +110,22 @@ public class ParkingGarageService
     *
     * Nimmt ein Kennzeichen vom Typ String als Parameter, welcher Parker entfernt werden soll
     */
-    public void removeNormalParker(string _numberPlate = "")
+    public int removeNormalParker(string _numberPlate = "")
     {
-        this.removeParker(ParkerEntity.TicketType.short_term, _numberPlate);
+        return this.removeParker(ParkerEntity.TicketType.short_term, _numberPlate);
     }
 
-/*
+    /*
     * Funktion zum entfernen eines Dauerparkers
     *
     * Nimmt ein Kennzeichen vom Typ String als Parameter, welcher Parker entfernt werden soll
     */
-    public void removeSeasonParker(string _numberPlate = "")
+    public int removeSeasonParker(string _numberPlate = "")
     {
-        this.removeParker(ParkerEntity.TicketType.season, _numberPlate);
+        return this.removeParker(ParkerEntity.TicketType.season, _numberPlate);
     }
 
-    private void removeParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
+    private int removeParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
     {
         int longestNormalParkerId = this.parkingGarageContext.Parkers
             .Where(parkers => parkers.ticket == ticketType)
@@ -133,7 +133,7 @@ public class ParkingGarageService
             .Select(parkers => parkers.Id)
             .FirstOrDefault();
 
-        ParkerEntity longestNormalParker = null;
+        ParkerEntity longestNormalParker = new ParkerEntity();
         if (_numberPlate == "") {    
             longestNormalParker = this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId);
         } else {
@@ -144,5 +144,53 @@ public class ParkingGarageService
             longestNormalParker.exitTime = DateTime.Now;
             this.parkingGarageContext.SaveChanges();
         }
+
+        return longestNormalParkerId;
+    }
+
+    /*
+    * Funktion zum zuweisen eines Parkplatzes an einen Parker
+    *
+    * Nimmt eine Parker-Id vom Typ int als Parameter
+    */
+    public void assignParkingplace(int parkerId)
+    {
+        ParkingSpotEntity parkingspot = new ParkingSpotEntity()
+        {
+            parkerId = parkerId
+        };
+        this.parkingGarageContext.Add(parkingspot);
+        this.parkingGarageContext.SaveChanges();
+    }
+
+    /*
+    * Funktion zum entfernen einer Parkplatzzuweisung eines Parkers
+    *
+    * Nimmt eine Parker-Id vom Typ int als Parameter
+    */
+    public void unassignParkingplace(int parkerId)
+    {
+        this.parkingGarageContext.Remove(
+            this.parkingGarageContext.ParkingSpots.Single(parkers => parkers.Id == parkerId)
+        );
+    }
+
+    /*
+    * Funktion zum ermitteln der Parkdauer eines Parkers
+    *
+    * Nimmt eine Parker-Id vom Typ int als Parameter
+    */
+    public int getParkingDurationMinutes(int parkerId)
+    {
+        TimeSpan? timeParked = this.parkingGarageContext.Parkers
+            .Where(parkers => parkers.Id == parkerId)
+            .Select(parkers => parkers.exitTime - parkers.entryTime)
+            .Single();
+
+        if (timeParked == null) {
+            return 0;
+        }
+
+        return ((TimeSpan)timeParked).Minutes / 60;
     }
 }
