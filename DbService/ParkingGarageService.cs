@@ -110,9 +110,9 @@ public class ParkingGarageService
     *
     * Nimmt ein Kennzeichen vom Typ String als Parameter, welcher Parker entfernt werden soll
     */
-    public void removeNormalParker(string _numberPlate = "")
+    public int removeNormalParker(string _numberPlate = "")
     {
-        this.removeParker(ParkerEntity.TicketType.short_term, _numberPlate);
+        return this.removeParker(ParkerEntity.TicketType.short_term, _numberPlate);
     }
 
     /*
@@ -120,12 +120,12 @@ public class ParkingGarageService
     *
     * Nimmt ein Kennzeichen vom Typ String als Parameter, welcher Parker entfernt werden soll
     */
-    public void removeSeasonParker(string _numberPlate = "")
+    public int removeSeasonParker(string _numberPlate = "")
     {
-        this.removeParker(ParkerEntity.TicketType.season, _numberPlate);
+        return this.removeParker(ParkerEntity.TicketType.season, _numberPlate);
     }
 
-    private void removeParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
+    private int removeParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
     {
         int longestNormalParkerId = this.parkingGarageContext.Parkers
             .Where(parkers => parkers.ticket == ticketType)
@@ -133,7 +133,7 @@ public class ParkingGarageService
             .Select(parkers => parkers.Id)
             .FirstOrDefault();
 
-        ParkerEntity longestNormalParker = null;
+        ParkerEntity longestNormalParker = new ParkerEntity();
         if (_numberPlate == "") {    
             longestNormalParker = this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId);
         } else {
@@ -144,6 +144,8 @@ public class ParkingGarageService
             longestNormalParker.exitTime = DateTime.Now;
             this.parkingGarageContext.SaveChanges();
         }
+
+        return longestNormalParkerId;
     }
 
     /*
