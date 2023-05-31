@@ -19,11 +19,21 @@
         height: 100px;
         left: 50%;
         background-color: black;
+        font-size: 65px;
+        color: rgb(57, 255, 20);
+        text-align: center;
     }
-    .buttonEinfahrt{
+    .buttonEinfahrtK{
         width: 200px;
         height: 100px;
         border: 2px solid black;
+        @(freeArbitrarySpaces > 0 ? "" : "pointer-events:none;filter:brightness(0.6)");
+    }
+    .buttonEinfahrtD{
+        width: 200px;
+        height: 100px;
+        border: 2px solid black;
+        @(freeSeasonSpaces > 0 ? "" : "pointer-events:none;filter:brightness(0.6)");
     }
     .grid-container {
         margin-top: 60%;
@@ -41,9 +51,76 @@
 <h1>Einfahrt</h1>
 
 <div class="maschine">
-    <div class="screen" style="margin-left: 100px;"></div>
+    <div class="screen" style="margin-left: 100px;">@freeArbitrarySpaces</div>
     <div class="grid-container">
-        <button class="grid-iteem buttonEinfahrt">Dauerparker</button>
-        <button class="grid-iteem buttonEinfahrt">Kurzparker</button>
+        <button class="grid-iteem buttonEinfahrtK btn btn-primary" @onclick="addNormalParker" >Dauerparker @normalParkers</button>
+        <button class="grid-iteem buttonEinfahrtD btn btn-primary" @onclick="addSeasonParker">Kurzparker @seasonParkers</button>
     </div>
 </div>
+
+@code
+{
+    int parkingSpaces = 0;
+    int freeArbitrarySpaces = 0;
+    int freeSeasonSpaces = 0;
+    int normalParkers = 0;
+    int seasonParkers = 0;
+
+    protected override void OnInitialized()
+    {
+        parkingSpaces = ParkingGarage.availableParkingSpaces;
+        UpdateValues();
+    }
+
+    private void addNormalParker()
+    {
+        if (freeArbitrarySpaces > 0) {
+            ParkingGarage.AddParkerOfType(ParkerType.normal);
+            UpdateValues();
+        }
+    }
+    private void addSeasonParker()
+    {
+        if (freeSeasonSpaces > 0) {
+            ParkingGarage.AddParkerOfType(ParkerType.season);
+            UpdateValues();
+        }
+    }
+    private int GetFreeArbitrarySpaces() 
+    {
+        freeArbitrarySpaces = ParkingGarage.GetFreeSpaces();
+        return freeArbitrarySpaces;
+    }
+
+    private int GetFreeSeasonSpaces() 
+    {
+        int reservedSeasonParkingSpaces = ParkingGarage.parkingGarageService.getReservedSeasonParkingSpaces();
+        int seasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        if (seasonParkers < reservedSeasonParkingSpaces) {
+            freeSeasonSpaces = ParkingGarage.GetFreeSpaces() + (reservedSeasonParkingSpaces - seasonParkers);
+        } else {
+            freeSeasonSpaces = ParkingGarage.GetFreeSpaces();
+        }
+        
+        return freeSeasonSpaces;
+    }
+
+    private int GetNormalParkers() 
+    {
+        normalParkers = ParkingGarage.getCurrentNormalParkers();
+        return normalParkers;
+    }
+
+    private int GetSeasonParkers() 
+    {
+        seasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        return seasonParkers;
+    }
+    protected void UpdateValues()
+    {
+        GetFreeArbitrarySpaces();
+        GetFreeSeasonSpaces();
+        GetNormalParkers();
+        GetSeasonParkers();
+    }
+}
