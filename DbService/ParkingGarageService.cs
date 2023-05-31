@@ -129,6 +129,7 @@ public class ParkingGarageService
     {
         int longestNormalParkerId = this.parkingGarageContext.Parkers
             .Where(parkers => parkers.ticket == ticketType)
+            .Where(parkers => parkers.exitTime == null)
             .OrderBy(parkers => parkers.entryTime)
             .Select(parkers => parkers.Id)
             .FirstOrDefault();
@@ -141,8 +142,16 @@ public class ParkingGarageService
         }
 
         if (longestNormalParker != null) {
-            longestNormalParker.exitTime = DateTime.Now;
-            this.parkingGarageContext.SaveChanges();
+            // Kurzparker werden gelöscht, Dauerparker nicht
+            if (ticketType == ParkerEntity.TicketType.short_term) {
+                this.parkingGarageContext.Remove(
+                    this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId)
+                );
+                this.parkingGarageContext.SaveChanges();
+            } else if (ticketType == ParkerEntity.TicketType.season) {
+                longestNormalParker.exitTime = DateTime.Now;
+                this.parkingGarageContext.SaveChanges();
+            }
         }
 
         return longestNormalParkerId;
