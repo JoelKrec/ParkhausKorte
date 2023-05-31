@@ -33,10 +33,16 @@
         width: 200px;
         height: 100px;
         border: 2px solid black;
-        @(freeSeasonSpaces > 0 ? "" : "pointer-events:none;filter:brightness(0.6)");
+        @((seasonParkers > 0) || (parkPrice == 0) ? "" : "pointer-events:none;filter:brightness(0.6)");
+    }
+    .buttonBezahlen{
+        width: 200px;
+        height: 100px;
+        border: 2px solid black;
+        @(parkPrice > 0 ? "" : "pointer-events:none;filter:brightness(0.6)");
     }
     .grid-container {
-        margin-top: 60%;
+        margin-top: 40%;
         display: grid;
         grid-template-columns: auto auto;
     }
@@ -53,19 +59,23 @@
 <div class="maschine">
     <div class="screen" style="margin-left: 100px;">@parkSpace</div>
     <div class="grid-container">
-        <button class="grid-iteem buttonEinfahrtK btn btn-primary" @onclick="subtractNormalParker" >Dauerparker @normalParkers</button>
-        <button class="grid-iteem buttonEinfahrtD btn btn-primary" @onclick="subtractSeasonParker">Kurzparker @freeSeasonSpaces</button>
+        <button class="grid-iteem buttonBezahlen btn btn-primary" @onclick="payParkingPrice"></button>
+        <div class="grid-iteem screen">@parkPrice</div>
+        <button class="grid-iteem buttonEinfahrtK btn btn-primary" @onclick="subtractNormalParker" >Dauerparker @seasonParkers</button>
+        <button class="grid-iteem buttonEinfahrtD btn btn-primary" @onclick="subtractSeasonParker">Kurzparker @normalParkers</button>
     </div>
 </div>
 
 @code
 {
+    int parkerId = 0;
     int parkingSpaces = 0;
     int freeArbitrarySpaces = 0;
     int freeSeasonSpaces = 0;
     int normalParkers = 0;
     int seasonParkers = 0;
     int parkSpace = 0;
+    float parkPrice = 0;
 
     protected override void OnInitialized()
     {
@@ -76,7 +86,8 @@
     {
         if (ParkingGarage.getCurrentNormalParkers() > 0)
         {
-            ParkingGarage.RemoveParkerOfType(ParkerType.normal);
+            parkerId = ParkingGarage.RemoveParkerOfType(ParkerType.normal);
+            parkPrice = GetParkPrice();
         }
         UpdateValues();
     }
@@ -84,8 +95,13 @@
     {
         if (ParkingGarage.getCurrentSeasonParkers() > 0)
         {
-            ParkingGarage.RemoveParkerOfType(ParkerType.season);
+            parkerId = ParkingGarage.RemoveParkerOfType(ParkerType.season);
         }
+        UpdateValues();
+    }
+    private void payParkingPrice(){
+        parkPrice = 0;
+        parkerId = 0;
         UpdateValues();
     }
     private int GetFreeArbitrarySpaces() 
@@ -117,6 +133,11 @@
     {
         seasonParkers = ParkingGarage.getCurrentSeasonParkers();
         return seasonParkers;
+    }
+    private float GetParkPrice() 
+    {
+        parkPrice = ParkingGarage.getParkingCost(parkerId);
+        return parkPrice;
     }
     protected void UpdateValues()
     {

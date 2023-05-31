@@ -76,19 +76,17 @@ public class ParkingGarage
         return addingSuccessful;
     }
 
-    public void RemoveParkerOfType(ParkerType parkerType)
+    public int RemoveParkerOfType(ParkerType parkerType)
     {
         switch(parkerType)
         {
             case ParkerType.normal:
-                this.parkingGarageService.removeNormalParker();
-                break;
+                return this.parkingGarageService.removeNormalParker();
             case ParkerType.season:
-                this.parkingGarageService.removeSeasonParker();
-                break;
+                return this.parkingGarageService.removeSeasonParker();
             case ParkerType.all:
             default:
-                break;
+                return 0;
         }
     }
 
