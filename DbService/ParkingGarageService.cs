@@ -180,7 +180,15 @@ public class ParkingGarageService
     */
     public int getParkingDurationMinutes(int parkerId)
     {
-        // TODO
-        return 0;
+        TimeSpan? timeParked = this.parkingGarageContext.Parkers
+            .Where(parkers => parkers.Id == parkerId)
+            .Select(parkers => parkers.exitTime - parkers.entryTime)
+            .Single();
+
+        if (timeParked == null) {
+            return 0;
+        }
+
+        return ((TimeSpan)timeParked).Minutes / 60;
     }
 }
