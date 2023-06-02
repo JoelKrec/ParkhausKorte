@@ -40,7 +40,7 @@ static void registerServices(IServiceCollection services)
 
     // Connect to database.
     // Change port if necessary (default: 3306).
-    var connectionString = "server=127.0.0.1;port=3306;user=db_user;password=db_password;database=parkhaus";
+    var connectionString = "server=127.0.0.1;port=3307;user=db_user;password=db_password;database=parkhaus";
     var serverVersion = ServerVersion.AutoDetect(connectionString);//new MariaDbServerVersion(new Version(10, 10, 3));
 
     services.AddDbContext<ParkingGarageContext>(
