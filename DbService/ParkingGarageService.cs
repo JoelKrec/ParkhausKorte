@@ -69,26 +69,52 @@ public class ParkingGarageService
     }
 
     /*
-    * Funktion zum hinzufügen eines Kurzparkers
+    * Funktion zum holen eines zufälligen Parkers
+    */
+    public int getRandomParker()
+    {
+        return this.parkingGarageContext.Parkers
+            .Skip(this.rnd.Next(this.getCurrentParkers() - 1))
+            .Select(parkers => parkers.Id)
+            .FirstOrDefault();
+    }
+
+    /*
+    * Funktion zum holen eines zufälligen Parkers des angegebenen Typs
+    */
+    public int getRandomParkerOfType(ParkerEntity.TicketType ticketType)
+    {
+        return this.parkingGarageContext.Parkers
+            .Where(parkers => parkers.ticket == ticketType)
+            .Skip(this.rnd.Next(this.getCurrentParkers() - 1))
+            .Select(parkers => parkers.Id)
+            .FirstOrDefault();
+    }
+
+    /*
+    * Funktion zum hinzufügen eines Kurzparkers, ggf. mit angabe des Nummernschildes
     *
     * Gibt einen String mit dem Kennzeichen des Parkers zurück
     */
-    public string addNormalParker(string _numberPlate = "")
+    public int addNormalParker(string _numberPlate = "")
     {
         return this.addParker(ParkerEntity.TicketType.short_term, _numberPlate);
     }
 
     /*
-    * Funktion zum hinzufügen eines Dauerparkers
+    * Funktion zum hinzufügen eines Dauerparkers, ggf. mit angabe des Nummernschildes
     *
-    * Gibt einen String mit dem Kennzeichen des Parkers zurück
+    * Gibt die Datensatz-Id des Parkers zurück
     */
-    public string addSeasonParker(string _numberPlate = "")
+    public int addSeasonParker(string _numberPlate = "")
     {
         return this.addParker(ParkerEntity.TicketType.season, _numberPlate);
     }
 
-    private string addParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
+    /*
+    * Funktion zum hinzufügen eines Parkers des angegebenen Typs, ggf. mit angabe des Nummernschildes
+    */
+    private int addParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
     {
         ParkerEntity parker = new ParkerEntity()
         {
@@ -99,33 +125,31 @@ public class ParkingGarageService
         this.parkingGarageContext.Add(parker);
         this.parkingGarageContext.SaveChanges();
 
-        return this.parkingGarageContext.Parkers
-            .Where(parkers => parkers.Id == parker.Id)
-            .Select(parkers => parkers.numberPlate)
-            .SingleOrDefault() ?? "";
+        this.assignParkingSpot(parker.Id);
+
+        return parker.Id;
     }
 
     /*
     * Funktion zum entfernen eines Kurzparkers
-    *
-    * Nimmt ein Kennzeichen vom Typ String als Parameter, welcher Parker entfernt werden soll
     */
-    public int removeNormalParker(string _numberPlate = "")
+    public int removeNormalParker()
     {
-        return this.removeParker(ParkerEntity.TicketType.short_term, _numberPlate);
+        return this.removeParkerOfType(ParkerEntity.TicketType.short_term);
     }
 
     /*
     * Funktion zum entfernen eines Dauerparkers
-    *
-    * Nimmt ein Kennzeichen vom Typ String als Parameter, welcher Parker entfernt werden soll
     */
-    public int removeSeasonParker(string _numberPlate = "")
+    public int removeSeasonParker()
     {
-        return this.removeParker(ParkerEntity.TicketType.season, _numberPlate);
+        return this.removeParkerOfType(ParkerEntity.TicketType.season);
     }
 
-    private int removeParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
+    /*
+    * Funktion zum entfernen eines Parkers des angegebenen Typs
+    */
+    private int removeParkerOfType(ParkerEntity.TicketType ticketType)
     {
         int longestNormalParkerId = this.parkingGarageContext.Parkers
             .Where(parkers => parkers.ticket == ticketType)
@@ -135,26 +159,29 @@ public class ParkingGarageService
             .FirstOrDefault();
 
         ParkerEntity longestNormalParker = new ParkerEntity();
-        if (_numberPlate == "") {    
-            longestNormalParker = this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId);
-        } else {
-            longestNormalParker = this.parkingGarageContext.Parkers.Single(parkers => parkers.numberPlate == _numberPlate);
-        }
+        longestNormalParker = this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId);
 
         if (longestNormalParker != null) {
             // Kurzparker werden gelöscht, Dauerparker nicht
             if (ticketType == ParkerEntity.TicketType.short_term) {
-                this.parkingGarageContext.Remove(
-                    this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId)
-                );
-                this.parkingGarageContext.SaveChanges();
+                this.removeParker(longestNormalParkerId);
             } else if (ticketType == ParkerEntity.TicketType.season) {
                 longestNormalParker.exitTime = DateTime.Now;
                 this.parkingGarageContext.SaveChanges();
             }
         }
 
+        this.unassignParkingSpot(longestNormalParkerId);
+
         return longestNormalParkerId;
+    }
+
+    public void removeParker(int parkerId)
+    {
+        this.parkingGarageContext.Remove(
+            this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == parkerId)
+        );
+        this.parkingGarageContext.SaveChanges();
     }
 
     /*
@@ -162,7 +189,7 @@ public class ParkingGarageService
     *
     * Nimmt eine Parker-Id vom Typ int als Parameter
     */
-    public void assignParkingplace(int parkerId)
+    public void assignParkingSpot(int parkerId)
     {
         ParkingSpotEntity parkingspot = new ParkingSpotEntity()
         {
@@ -177,11 +204,63 @@ public class ParkingGarageService
     *
     * Nimmt eine Parker-Id vom Typ int als Parameter
     */
-    public void unassignParkingplace(int parkerId)
+    public void unassignParkingSpot(int parkerId)
     {
         this.parkingGarageContext.Remove(
             this.parkingGarageContext.ParkingSpots.Single(parkers => parkers.Id == parkerId)
         );
+
+        this.parkingGarageContext.SaveChanges();
+    }
+
+    /*
+    * Funktion zum auslesen der Parkplatz-Id eines Parkers
+    *
+    * Nimmt eine Parker-Id vom Typ int als Parameter
+    */
+    public int getParkingSpot(int parkerId)
+    {
+        return this.parkingGarageContext.ParkingSpots
+            .Where(parkingspots => parkingspots.parkerId == parkerId)
+            .Select(parkingspots => parkingspots.Id)
+            .Single();
+    }
+
+    /*
+    * Funktion zum auslesen aller Parkplätze
+    *
+    */
+    public List<ParkingSpotEntity> getParkingSpots()
+    {
+        return this.parkingGarageContext.ParkingSpots
+            .Join(this.parkingGarageContext.Parkers,
+                parkingSpots => parkingSpots.parkerId, 
+                parkers => parkers.Id,
+                (parkingSpots, parkers) => new ParkingSpotEntity {
+                    Id = parkingSpots.Id,
+                    parkerId = parkers.numberPlate
+                })
+            .ToList();
+    }
+
+    /*
+    * Hilfsfunktion der Simulation zum generieren von Parkplätzen basierend auf der festgelegten Anzahl
+    *
+    * Nimmt eine Parker-Id vom Typ int als Parameter
+    */
+    public void generateParkingSpots()
+    {
+        this.parkingGarageContext.ParkingSpots.RemoveRange(this.parkingGarageContext.ParkingSpots);
+
+        for (int i = this.getMaxParkingSpaces(); i > 0; i--) {
+            ParkingSpotEntity parkingspot = new ParkingSpotEntity();
+            /*{
+                parkerId = null
+            };*/
+            this.parkingGarageContext.Add(parkingspot);
+        }
+
+        this.parkingGarageContext.SaveChanges();
     }
 
     /*
@@ -201,8 +280,8 @@ public class ParkingGarageService
             .Select(parkers => parkers.exitTime)
             .SingleOrDefault();
 
-        if (entryTime == null || exitTime == null) {
-            return 0;
+        if (exitTime == null) {
+            exitTime = DateTime.Now;
         }
 
         return ((exitTime ?? DateTime.Now) - (entryTime ?? DateTime.Now)).Minutes;

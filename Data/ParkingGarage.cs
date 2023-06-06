@@ -76,7 +76,7 @@ public class ParkingGarage
         return addingSuccessful;
     }
 
-    public int RemoveParkerOfType(ParkerType parkerType)
+    public int RemoveRandomParkerOfType(ParkerType parkerType)
     {
         switch(parkerType)
         {
@@ -88,6 +88,11 @@ public class ParkingGarage
             default:
                 return 0;
         }
+    }
+
+     public void RemoveParker(int parkerId)
+    {
+        this.parkingGarageService.removeParker(parkerId);
     }
 
     public int GetFreeSpaces()
@@ -108,23 +113,48 @@ public class ParkingGarage
         return freeSpaces;
     }
 
-    public int getCurrentSeasonParkers()
+    public int GetCurrentSeasonParkers()
     {
         return this.parkingGarageService.getCurrentSeasonParkers();
     }
 
-    public int getCurrentNormalParkers()
+    public int GetCurrentNormalParkers()
     {
         return this.parkingGarageService.getCurrentNormalParkers();
     }
 
-    public int getCurrentParkers()
+    public int GetCurrentParkers()
     {
         return this.parkingGarageService.getCurrentParkers();
     }
 
-    public float getParkingCost(int parkerId) {
+    public int GetRandomParkerOfType(ParkerType parkerType)
+    {
+        switch(parkerType)
+        {
+            case ParkerType.normal:
+                return this.parkingGarageService.getRandomParkerOfType(ParkerEntity.TicketType.short_term);
+            case ParkerType.season:
+                return this.parkingGarageService.getRandomParkerOfType(ParkerEntity.TicketType.season);
+            case ParkerType.all:
+            default:
+                return this.parkingGarageService.getRandomParker();
+        }
+    }
+
+    public float GetParkingDuration(int parkerId)
+    {
+        return this.parkingGarageService.getParkingDurationMinutes(parkerId);
+    }
+
+    public float GetParkingCost(int parkerId)
+    {
         return this.parkingGarageService.getParkingDurationMinutes(parkerId) * this.parkingCostPerMinute;
+    }
+
+    public List<ParkingSpotEntity> GetParkingSpots()
+    {
+        return this.parkingGarageService.getParkingSpots();
     }
 }
 
