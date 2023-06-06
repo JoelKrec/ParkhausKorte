@@ -129,6 +129,7 @@ public class ParkingGarageService
     {
         int longestNormalParkerId = this.parkingGarageContext.Parkers
             .Where(parkers => parkers.ticket == ticketType)
+            .Where(parkers => parkers.exitTime == null)
             .OrderBy(parkers => parkers.entryTime)
             .Select(parkers => parkers.Id)
             .FirstOrDefault();
@@ -141,8 +142,16 @@ public class ParkingGarageService
         }
 
         if (longestNormalParker != null) {
-            longestNormalParker.exitTime = DateTime.Now;
-            this.parkingGarageContext.SaveChanges();
+            // Kurzparker werden gelöscht, Dauerparker nicht
+            if (ticketType == ParkerEntity.TicketType.short_term) {
+                this.parkingGarageContext.Remove(
+                    this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId)
+                );
+                this.parkingGarageContext.SaveChanges();
+            } else if (ticketType == ParkerEntity.TicketType.season) {
+                longestNormalParker.exitTime = DateTime.Now;
+                this.parkingGarageContext.SaveChanges();
+            }
         }
 
         return longestNormalParkerId;
@@ -182,15 +191,20 @@ public class ParkingGarageService
     */
     public int getParkingDurationMinutes(int parkerId)
     {
-        TimeSpan? timeParked = this.parkingGarageContext.Parkers
+        DateTime? entryTime = this.parkingGarageContext.Parkers
             .Where(parkers => parkers.Id == parkerId)
-            .Select(parkers => parkers.exitTime - parkers.entryTime)
-            .Single();
+            .Select(parkers => parkers.entryTime)
+            .SingleOrDefault();
+            
+        DateTime? exitTime = this.parkingGarageContext.Parkers
+            .Where(parkers => parkers.Id == parkerId)
+            .Select(parkers => parkers.exitTime)
+            .SingleOrDefault();
 
-        if (timeParked == null) {
+        if (entryTime == null || exitTime == null) {
             return 0;
         }
 
-        return ((TimeSpan)timeParked).Minutes / 60;
+        return ((exitTime ?? DateTime.Now) - (entryTime ?? DateTime.Now)).Minutes;
     }
 }
