@@ -45,8 +45,6 @@ else
     <br>
     <br>
     <h2>Belegung</h2>
-    <button class="btn btn-primary" @onclick="generateParkingSpots">Parkplätze Generieren</button>
-    <br>
     <br>
     <table class="table">
         @foreach (JoinedResultset parkingSpot in parkingSpots) {
@@ -63,6 +61,9 @@ else
             }
         }
     </table>
+    <br>
+    <button class="btn btn-primary" @onclick="generateParkingSpots">Parkplätze Neu Generieren (Löscht Zuweisungen!)</button>
+    <br>
 }
 
 @code
