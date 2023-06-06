@@ -42,18 +42,20 @@ else
             </tr>
         </tbody>
     </table>
-
+    <br>
+    <br>
     <h2>Belegung</h2>
     <button class="btn btn-primary" @onclick="generateParkingSpots">Parkplätze Generieren</button>
-
+    <br>
+    <br>
     <table class="table">
-        @foreach (ParkingSpotEntity parkingSpot in parkingSpots) {
+        @foreach (JoinedResultset parkingSpot in parkingSpots) {
             @if (count == 0) {
                 @:<tr>
             }
             count++;
             @if (count > 0 && count < 10) {
-                <td>#@parkingSpot.numberPlate</td>
+                <td>|@((parkingSpot.numberPlate ?? " ").ToString().PadLeft(9, '_'))|</td>
             }
             @if (count == 10) {
                 count = 0;
@@ -75,7 +77,7 @@ else
     int currentParkers = 0;
     int currentNormalParkers = 0;
     int currentSeasonParkers = 0;
-    List<ParkingSpotEntity> parkingSpots;
+    List<JoinedResultset> parkingSpots;
 
     protected override void OnInitialized()
     {

@@ -152,7 +152,7 @@ public class ParkingGarage
         return this.parkingGarageService.getParkingDurationMinutes(parkerId) * this.parkingCostPerMinute;
     }
 
-    public List<ParkingSpotEntity> GetParkingSpots()
+    public List<JoinedResultset> GetParkingSpots()
     {
         return this.parkingGarageService.getParkingSpots();
     }

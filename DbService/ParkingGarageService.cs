@@ -230,15 +230,22 @@ public class ParkingGarageService
     * Funktion zum auslesen aller Parkplätze
     *
     */
-    public List<ParkingSpotEntity> getParkingSpots()
+    public List<JoinedResultset> getParkingSpots()
     {
         return this.parkingGarageContext.ParkingSpots
-            .Join(this.parkingGarageContext.Parkers,
-                parkingSpots => parkingSpots.parkerId, 
+            .GroupJoin(
+                this.parkingGarageContext.Parkers,
+                parkingSpots => parkingSpots.parkerId,
                 parkers => parkers.Id,
-                (parkingSpots, parkers) => new ParkingSpotEntity {
-                    Id = parkingSpots.Id,
-                    parkerId = parkers.numberPlate
+                (parkingSpots, parkers) => new {
+                    parkingSpotId = parkingSpots.Id,
+                    Parkers = parkers
+                })
+            .SelectMany(
+                parkers => parkers.Parkers.DefaultIfEmpty(),
+                (parkingSpots, parkers) => new JoinedResultset {
+                    parkingSpotId = parkingSpots.parkingSpotId,
+                    numberPlate = parkers.numberPlate
                 })
             .ToList();
     }
@@ -253,10 +260,11 @@ public class ParkingGarageService
         this.parkingGarageContext.ParkingSpots.RemoveRange(this.parkingGarageContext.ParkingSpots);
 
         for (int i = this.getMaxParkingSpaces(); i > 0; i--) {
-            ParkingSpotEntity parkingspot = new ParkingSpotEntity();
-            /*{
+            ParkingSpotEntity parkingspot = new ParkingSpotEntity()
+            {
+                Id = i,
                 parkerId = null
-            };*/
+            };
             this.parkingGarageContext.Add(parkingspot);
         }
 
