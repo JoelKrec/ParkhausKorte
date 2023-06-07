@@ -74,7 +74,7 @@ public class ParkingGarageService
     public int getRandomParker()
     {
         return this.parkingGarageContext.Parkers
-            .Skip(this.rnd.Next(this.getCurrentParkers() - 1))
+            .Skip(this.rnd.Next(this.getCurrentParkers()))
             .Select(parkers => parkers.Id)
             .FirstOrDefault();
     }
@@ -86,7 +86,7 @@ public class ParkingGarageService
     {
         return this.parkingGarageContext.Parkers
             .Where(parkers => parkers.ticket == ticketType)
-            .Skip(this.rnd.Next(this.getCurrentParkers() - 1))
+            .Skip(this.rnd.Next(this.getCurrentParkers()))
             .Select(parkers => parkers.Id)
             .FirstOrDefault();
     }
@@ -191,11 +191,11 @@ public class ParkingGarageService
     */
     public void assignParkingSpot(int parkerId)
     {
-        ParkingSpotEntity parkingspot = new ParkingSpotEntity()
-        {
-            parkerId = parkerId
-        };
-        this.parkingGarageContext.Add(parkingspot);
+        ParkingSpotEntity parkingspot = this.parkingGarageContext.ParkingSpots
+            .Where(parkingspots => parkingspots.parkerId == null)
+            .First();
+
+        parkingspot.parkerId = parkerId;
         this.parkingGarageContext.SaveChanges();
     }
 
@@ -206,10 +206,11 @@ public class ParkingGarageService
     */
     public void unassignParkingSpot(int parkerId)
     {
-        this.parkingGarageContext.Remove(
-            this.parkingGarageContext.ParkingSpots.Single(parkers => parkers.Id == parkerId)
-        );
+        ParkingSpotEntity parkingspot = this.parkingGarageContext.ParkingSpots
+            .Where(parkingspots => parkingspots.parkerId == parkerId)
+            .Single();
 
+        parkingspot.parkerId = null;
         this.parkingGarageContext.SaveChanges();
     }
 

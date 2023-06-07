@@ -7,6 +7,7 @@
 <PageTitle>Ausfahrt</PageTitle>
 
 <h1>Ausfahrt</h1>
+<h4>Parker-ID: @parkerId</h4>
 
 <div class="maschine">
     <div class="screen">@display</div>
@@ -57,7 +58,7 @@
     {
         if (ParkingGarage.GetCurrentSeasonParkers() > 0)
         {
-            parkerId = ParkingGarage.RemoveRandomParkerOfType(ParkerType.season);
+            ParkingGarage.RemoveRandomParkerOfType(ParkerType.season);
         }
         UpdateValues();
 
@@ -75,7 +76,7 @@
         parkerId = 0;
 
         UpdateValues();
-         this.StateHasChanged();
+        this.StateHasChanged();
     }
 
     private async Task DisplayTemporaryMessage(string message, int millis) {
