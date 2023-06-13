@@ -27,5 +27,15 @@ public class ParkerEntity
 public class ParkingSpotEntity
 {
     public int Id { get; set; }
+    public Nullable<int> parkerId { get; set; }
+}
+
+public class JoinedResultset
+{
     public int parkerId { get; set; }
+    public Nullable<int> parkingSpotId { get; set; }
+    public string numberPlate { get; set; }
+    public DateTime entryTime { get; set; }
+    public Nullable<DateTime> exitTime { get; set; }
+    public ParkerEntity.TicketType ticket { get; set; }
 }

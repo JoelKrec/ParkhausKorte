@@ -6,64 +6,19 @@
 
 <PageTitle>Ausfahrt</PageTitle>
 
-<style>
-    .maschine{
-        width: 500px;
-        height: 600px;
-        border: 2px solid black;
-        background-color: grey;
-  		padding: 40px;
-    }
-    .screen{
-        width: 200px;
-        height: 100px;
-        left: 50%;
-        background-color: black;
-        font-size: 65px;
-        color: rgb(57, 255, 20);
-        text-align: center;
-    }
-    .buttonEinfahrtK{
-        width: 200px;
-        height: 100px;
-        border: 2px solid black;
-        @(normalParkers > 0 ? "" : "pointer-events:none;filter:brightness(0.6)");
-    }
-    .buttonEinfahrtD{
-        width: 200px;
-        height: 100px;
-        border: 2px solid black;
-        @((seasonParkers > 0) || (parkPrice == 0) ? "" : "pointer-events:none;filter:brightness(0.6)");
-    }
-    .buttonBezahlen{
-        width: 200px;
-        height: 100px;
-        border: 2px solid black;
-        @(parkPrice > 0 ? "" : "pointer-events:none;filter:brightness(0.6)");
-    }
-    .grid-container {
-        margin-top: 40%;
-        display: grid;
-        grid-template-columns: auto auto;
-    }
-    .grid-item {
-        background-color: black;
-        padding: 20px;
-        font-size: 30px;
-        text-align: center;
-    }
-</style>
-
 <h1>Ausfahrt</h1>
+<h4>Parker-ID: @parkerId</h4>
 
 <div class="maschine">
-    <div class="screen" style="margin-left: 100px;">@parkSpace</div>
+    <div class="screen">@display</div>
+    <br>
+    <div class="ticket-slot"></div>
     <div class="grid-container">
-        <button class="grid-iteem buttonBezahlen btn btn-primary" @onclick="payParkingPrice"></button>
-        <div class="grid-iteem screen">@parkPrice</div>
-        <button class="grid-iteem buttonEinfahrtK btn btn-primary" @onclick="subtractNormalParker" >Dauerparker @seasonParkers</button>
-        <button class="grid-iteem buttonEinfahrtD btn btn-primary" @onclick="subtractSeasonParker">Kurzparker @normalParkers</button>
+        <button class="grid-item btn-short-term-parker btn btn-primary @((normalParkers == 0 || parkingCost != 0) ? "btn-disabled" : "")" @onclick="subtractNormalParker">Kurzparker (@normalParkers)</button>
+        <button class="grid-item btn-season-parker btn btn-primary @((seasonParkers == 0 || parkingCost != 0) ? "btn-disabled" : "")" @onclick="subtractSeasonParker">Dauerparker (@seasonParkers)</button>
     </div>
+    <hr>
+    <button class="grid-item btn-pay btn btn-primary @(payBtnDisabled ? "btn-disabled" : "")" @onclick="payParkingCost">Bezahlen</button>
 </div>
 
 @code
@@ -74,36 +29,69 @@
     int freeSeasonSpaces = 0;
     int normalParkers = 0;
     int seasonParkers = 0;
-    int parkSpace = 0;
-    float parkPrice = 0;
+    float parkingCost = 0;
+    string display = "vvv Ticket vvv";
+    bool payBtnDisabled = true;
 
     protected override void OnInitialized()
     {
         parkingSpaces = ParkingGarage.availableParkingSpaces;
         UpdateValues();
     }
+
     private void subtractNormalParker()
     {
-        if (ParkingGarage.getCurrentNormalParkers() > 0)
+        if (ParkingGarage.GetCurrentNormalParkers() > 0)
         {
-            parkerId = ParkingGarage.RemoveParkerOfType(ParkerType.normal);
-            parkPrice = GetParkPrice();
+            parkerId = ParkingGarage.GetRandomParkerOfType(ParkerType.normal);
+            parkingCost = GetParkingCost();
         }
+
+        display = "Parkdauer: " + ParkingGarage.GetParkingDuration(parkerId)+ " min. " +
+            "Gebühr: " + parkingCost.ToString("0.00") + " €";
+        payBtnDisabled = false;
+
         UpdateValues();
     }
+
     private void subtractSeasonParker()
     {
-        if (ParkingGarage.getCurrentSeasonParkers() > 0)
+        if (ParkingGarage.GetCurrentSeasonParkers() > 0)
         {
-            parkerId = ParkingGarage.RemoveParkerOfType(ParkerType.season);
+            ParkingGarage.RemoveRandomParkerOfType(ParkerType.season);
         }
         UpdateValues();
+
+        DisplayTemporaryMessage("Gute Fahrt!", 2000);
     }
-    private void payParkingPrice(){
-        parkPrice = 0;
+
+    private async void payParkingCost() {
+        ParkingGarage.RemoveParker(parkerId);
+
+        payBtnDisabled = true;
+        
+        await DisplayTemporaryMessage("Gute Fahrt!", 2000);
+
+        parkingCost = 0;
         parkerId = 0;
+
         UpdateValues();
+        this.StateHasChanged();
     }
+
+    private async Task DisplayTemporaryMessage(string message, int millis) {
+        if (display != message) {
+            display = message;
+
+            await Task.Delay(millis);
+
+            if (display == message) {
+                display = "vvv Ticket vvv";
+            }
+            this.StateHasChanged();
+        }
+    }
+
     private int GetFreeArbitrarySpaces() 
     {
         freeArbitrarySpaces = ParkingGarage.GetFreeSpaces();
@@ -113,7 +101,7 @@
     private int GetFreeSeasonSpaces() 
     {
         int reservedSeasonParkingSpaces = ParkingGarage.parkingGarageService.getReservedSeasonParkingSpaces();
-        int seasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        int seasonParkers = ParkingGarage.GetCurrentSeasonParkers();
         if (seasonParkers < reservedSeasonParkingSpaces) {
             freeSeasonSpaces = ParkingGarage.GetFreeSpaces() + (reservedSeasonParkingSpaces - seasonParkers);
         } else {
@@ -125,26 +113,27 @@
 
     private int GetNormalParkers() 
     {
-        normalParkers = ParkingGarage.getCurrentNormalParkers();
+        normalParkers = ParkingGarage.GetCurrentNormalParkers();
         return normalParkers;
     }
 
     private int GetSeasonParkers() 
     {
-        seasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        seasonParkers = ParkingGarage.GetCurrentSeasonParkers();
         return seasonParkers;
     }
-    private float GetParkPrice() 
+
+    private float GetParkingCost() 
     {
-        parkPrice = ParkingGarage.getParkingCost(parkerId);
-        return parkPrice;
+        parkingCost = ParkingGarage.GetParkingCost(parkerId);
+        return parkingCost;
     }
+
     protected void UpdateValues()
     {
         GetFreeArbitrarySpaces();
         GetFreeSeasonSpaces();
         GetNormalParkers();
         GetSeasonParkers();
-        
     }
 }

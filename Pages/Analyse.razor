@@ -3,6 +3,7 @@
 <PageTitle>Analyse</PageTitle>
 
 @using ParkhausKorte.Data
+@using ParkhausKorte.DbService
 @inject ParkingGarage ParkingGarage
 
 <h1>Analyse</h1>
@@ -41,10 +42,34 @@ else
             </tr>
         </tbody>
     </table>
+    <br>
+    <br>
+    <h2>Belegung</h2>
+    <br>
+    <table class="table">
+        @foreach (JoinedResultset parkingSpot in parkingSpots) {
+            @if (count == 0) {
+                @:<tr>
+            }
+            count++;
+            @if (count > 0 && count < 10) {
+                <td>|@((parkingSpot.numberPlate ?? " ").ToString().PadLeft(9, '_'))|</td>
+            }
+            @if (count == 10) {
+                count = 0;
+                @:</tr>
+            }
+        }
+    </table>
+    <br>
+    <button class="btn btn-primary" @onclick="generateParkingSpots">Parkplätze Neu Generieren (Löscht Zuweisungen!)</button>
+    <br>
 }
 
 @code
 {
+    int count = 0;
+
     int parkingSpaces = 0;
     int maxParkers = 0;
     int bufferSpaces = 0;
@@ -53,16 +78,24 @@ else
     int currentParkers = 0;
     int currentNormalParkers = 0;
     int currentSeasonParkers = 0;
+    List<JoinedResultset> parkingSpots;
 
     protected override void OnInitialized()
     {
         freeSpaces = ParkingGarage.GetFreeSpaces();
         parkingSpaces = ParkingGarage.availableParkingSpaces;
         maxParkers = ParkingGarage.totalParkingSpaces;
-        currentParkers = ParkingGarage.getCurrentParkers();
-        currentNormalParkers = ParkingGarage.getCurrentNormalParkers();
-        currentSeasonParkers = ParkingGarage.getCurrentSeasonParkers();
+        currentParkers = ParkingGarage.GetCurrentParkers();
+        currentNormalParkers = ParkingGarage.GetCurrentNormalParkers();
+        currentSeasonParkers = ParkingGarage.GetCurrentSeasonParkers();
         reservedSeasonSpaces = ParkingGarage.reservedSeasonParkingSpaces;
         bufferSpaces = ParkingGarage.parkingSpaceBuffer;
+        parkingSpots = ParkingGarage.GetParkingSpots();
+    }
+
+    private void generateParkingSpots() {
+        ParkingGarage.parkingGarageService.generateParkingSpots();
+
+        this.StateHasChanged();
     }
 }
