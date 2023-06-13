@@ -19,6 +19,7 @@ public class ParkingGarageService
     */
     public int getMaxParkingSpaces()
     {
+        // SELECT parkinggarage.maxParkingSpaces FROM parkinggarage
         return this.parkingGarageContext.ParkingGarage.Select(u => u.maxParkingSpaces).SingleOrDefault();
     }
 
@@ -27,6 +28,7 @@ public class ParkingGarageService
     */
     public int getReservedSeasonParkingSpaces()
     {
+        // SELECT parkinggarage.reservedSeasonParkingSpaces FROM parkinggarage
         return this.parkingGarageContext.ParkingGarage.Select(u => u.reservedSeasonParkingSpaces).SingleOrDefault();
     }
 
@@ -35,6 +37,7 @@ public class ParkingGarageService
     */
     public int getParkingSpaceBuffer()
     {
+        // SELECT parkinggarage.parkingSpaceBuffer FROM parkinggarage
         return this.parkingGarageContext.ParkingGarage.Select(u => u.parkingSpaceBuffer).SingleOrDefault();
     }
 
@@ -43,6 +46,7 @@ public class ParkingGarageService
     */
     public int getCurrentNormalParkers()
     {
+        // SELECT COUNT(*) FROM parkers WHERE parkers.exitTime IS NULL AND parkers.ticket = 0
         return this.parkingGarageContext.Parkers
             .Where(parkers => parkers.exitTime == null)
             .Count(w => w.ticket == ParkerEntity.TicketType.short_term);
@@ -53,6 +57,7 @@ public class ParkingGarageService
     */
     public int getCurrentSeasonParkers()
     {
+        // SELECT COUNT(*) FROM parkers WHERE parkers.exitTime IS NULL AND parkers.ticket = 1
         return this.parkingGarageContext.Parkers
             .Where(parkers => parkers.exitTime == null)
             .Count(parkers => parkers.ticket == ParkerEntity.TicketType.season);
@@ -63,6 +68,7 @@ public class ParkingGarageService
     */
     public int getCurrentParkers()
     {
+        // SELECT COUNT(*) FROM parkers WHERE parkers.exitTime IS NULL
         return this.parkingGarageContext.Parkers
             .Where(parkers => parkers.exitTime == null)
             .Count();
@@ -73,6 +79,7 @@ public class ParkingGarageService
     */
     public int getRandomParker()
     {
+        // SELECT parkers.Id FROM parkers OFFSET [Zufallszahl zwischen 0 und der Anzahl aller Parker] LIMIT 1
         return this.parkingGarageContext.Parkers
             .Skip(this.rnd.Next(this.getCurrentParkers()))
             .Select(parkers => parkers.Id)
@@ -84,6 +91,8 @@ public class ParkingGarageService
     */
     public int getRandomParkerOfType(ParkerEntity.TicketType ticketType)
     {
+        // SELECT parkers.Id FROM parkers WHERE parkers.ticket = [ticketType]
+        //   OFFSET [Zufallszahl zwischen 0 und der Anzahl aller Parker] LIMIT 1
         return this.parkingGarageContext.Parkers
             .Where(parkers => parkers.ticket == ticketType)
             .Skip(this.rnd.Next(this.getCurrentParkers()))
@@ -116,6 +125,7 @@ public class ParkingGarageService
     */
     private int addParker(ParkerEntity.TicketType ticketType, string _numberPlate = "")
     {
+        // INSERT INTO parkers (numberPlate, entryTime, ticket) VALUES ([zufällig generiertes Nummernschild], [aktuelles Datum + Zeit], [ticketType])
         ParkerEntity parker = new ParkerEntity()
         {
             numberPlate = _numberPlate == "" ? "te-st" + this.rnd.Next(10000) : _numberPlate,
@@ -151,6 +161,8 @@ public class ParkingGarageService
     */
     private int removeParkerOfType(ParkerEntity.TicketType ticketType)
     {
+        // SELECT parkers.Id FROM parkers WHERE parkers.ticket = [ticketType] AND parkers.exitTime IS NULL
+        //   ORDER BY parkers.entryTime ASC LIMIT 1
         int longestNormalParkerId = this.parkingGarageContext.Parkers
             .Where(parkers => parkers.ticket == ticketType)
             .Where(parkers => parkers.exitTime == null)
@@ -158,7 +170,7 @@ public class ParkingGarageService
             .Select(parkers => parkers.Id)
             .FirstOrDefault();
 
-        ParkerEntity longestNormalParker = new ParkerEntity();
+        ParkerEntity longestNormalParker = new ParkerEntity(); 
         longestNormalParker = this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == longestNormalParkerId);
 
         if (longestNormalParker != null) {
@@ -166,6 +178,7 @@ public class ParkingGarageService
             if (ticketType == ParkerEntity.TicketType.short_term) {
                 this.removeParker(longestNormalParkerId);
             } else if (ticketType == ParkerEntity.TicketType.season) {
+                // UPDATE parkers SET parkers.exitTime = [aktuelles Datum + Zeit] WHERE parkers.Id = [longestNormalParkerId]
                 longestNormalParker.exitTime = DateTime.Now;
                 this.parkingGarageContext.SaveChanges();
             }
@@ -178,6 +191,7 @@ public class ParkingGarageService
 
     public void removeParker(int parkerId)
     {
+        // DELETE FROM parkers WHERE parkers.Id = [parkerId]
         this.parkingGarageContext.Remove(
             this.parkingGarageContext.Parkers.Single(parkers => parkers.Id == parkerId)
         );
@@ -191,6 +205,7 @@ public class ParkingGarageService
     */
     public void assignParkingSpot(int parkerId)
     {
+        // UPDATE parkingspots SET parkingspots.parkerId = [parkerId] WHERE parkingspots.parkerId IS NULL LIMIT 1
         ParkingSpotEntity parkingspot = this.parkingGarageContext.ParkingSpots
             .Where(parkingspots => parkingspots.parkerId == null)
             .First();
@@ -206,6 +221,7 @@ public class ParkingGarageService
     */
     public void unassignParkingSpot(int parkerId)
     {
+        // UPDATE parkingspots SET parkingspots.parkerId = NULL WHERE parkingspots.parkerId = [parkerId]
         ParkingSpotEntity parkingspot = this.parkingGarageContext.ParkingSpots
             .Where(parkingspots => parkingspots.parkerId == parkerId)
             .Single();
@@ -221,6 +237,7 @@ public class ParkingGarageService
     */
     public int getParkingSpot(int parkerId)
     {
+        // SELECT parkingspots.Id FROM parkingspots WHERE parkingspots.parkerId = [parkerId]
         return this.parkingGarageContext.ParkingSpots
             .Where(parkingspots => parkingspots.parkerId == parkerId)
             .Select(parkingspots => parkingspots.Id)
@@ -233,6 +250,7 @@ public class ParkingGarageService
     */
     public List<JoinedResultset> getParkingSpots()
     {
+        // SELECT parkingspots.Id, parkers.numberPlate FROM parkingspots LEFT JOIN parkers ON parkingspots.parkerId = parkers.Id
         return this.parkingGarageContext.ParkingSpots
             .GroupJoin(
                 this.parkingGarageContext.Parkers,
@@ -261,6 +279,7 @@ public class ParkingGarageService
         this.parkingGarageContext.ParkingSpots.RemoveRange(this.parkingGarageContext.ParkingSpots);
 
         for (int i = this.getMaxParkingSpaces(); i > 0; i--) {
+            // INSERT INTO parkingspots VALUES ([i], NULL)
             ParkingSpotEntity parkingspot = new ParkingSpotEntity()
             {
                 Id = i,
@@ -279,6 +298,8 @@ public class ParkingGarageService
     */
     public int getParkingDurationMinutes(int parkerId)
     {
+        // SELECT CEIL((COALESCE(UNIX_TIMESTAMP(parkers.exitTime), UNIX_TIMESTAMP()) - UNIX_TIMESTAMP(parkers.entryTime)) / 60) FROM parkers WHERE parkers.Id = [parkerId]
+
         DateTime? entryTime = this.parkingGarageContext.Parkers
             .Where(parkers => parkers.Id == parkerId)
             .Select(parkers => parkers.entryTime)
@@ -293,6 +314,9 @@ public class ParkingGarageService
             exitTime = DateTime.Now;
         }
 
-        return ((exitTime ?? DateTime.Now) - (entryTime ?? DateTime.Now)).Minutes;
+        int exitTimestamp = ((DateTimeOffset) (exitTime ?? DateTime.Now)).ToUnixTimeSeconds();
+        int entryTimestamp = ((DateTimeOffset) entryTime).ToUnixTimeSeconds();
+        
+        return Math.Ceiling((exitTimestamp - entryTimestamp) / 60);
     }
 }
