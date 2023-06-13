@@ -314,9 +314,10 @@ public class ParkingGarageService
             exitTime = DateTime.Now;
         }
 
-        int exitTimestamp = ((DateTimeOffset) (exitTime ?? DateTime.Now)).ToUnixTimeSeconds();
-        int entryTimestamp = ((DateTimeOffset) entryTime).ToUnixTimeSeconds();
+        long exitTimestamp = ((DateTimeOffset) (exitTime ?? DateTime.Now)).ToUnixTimeSeconds();
+        long entryTimestamp = ((DateTimeOffset) entryTime).ToUnixTimeSeconds();
+        double parkingDuration = (double)(exitTimestamp - entryTimestamp) / 60;
         
-        return Math.Ceiling((exitTimestamp - entryTimestamp) / 60);
+        return (int) Math.Ceiling((double)(exitTimestamp - entryTimestamp) / 60);
     }
 }

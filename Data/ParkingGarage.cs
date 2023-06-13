@@ -9,7 +9,7 @@ public class ParkingGarage
     public readonly int reservedSeasonParkingSpaces;
     public readonly int parkingSpaceBuffer;
     public readonly int totalParkingSpaces;
-    public readonly float parkingCostPerMinute = 1; //€
+    public readonly double parkingCostPerHour = 6.9; //€
 
     public ParkingGarage(ParkingGarageContext _parkingGarageContext)
     {
@@ -142,14 +142,14 @@ public class ParkingGarage
         }
     }
 
-    public float GetParkingDuration(int parkerId)
+    public double GetParkingDuration(int parkerId)
     {
-        return this.parkingGarageService.getParkingDurationMinutes(parkerId);
+        return Math.Ceiling((double)this.parkingGarageService.getParkingDurationMinutes(parkerId) / 60);
     }
 
-    public float GetParkingCost(int parkerId)
+    public double GetParkingCost(int parkerId)
     {
-        return this.parkingGarageService.getParkingDurationMinutes(parkerId) * this.parkingCostPerMinute;
+        return Math.Ceiling((double) this.parkingGarageService.getParkingDurationMinutes(parkerId) / 60) * this.parkingCostPerHour;
     }
 
     public List<JoinedResultset> GetParkingSpots()

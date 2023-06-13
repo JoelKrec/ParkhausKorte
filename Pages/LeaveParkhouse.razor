@@ -29,7 +29,7 @@
     int freeSeasonSpaces = 0;
     int normalParkers = 0;
     int seasonParkers = 0;
-    float parkingCost = 0;
+    double parkingCost = 0;
     string display = "vvv Ticket vvv";
     bool payBtnDisabled = true;
 
@@ -47,7 +47,7 @@
             parkingCost = GetParkingCost();
         }
 
-        display = "Parkdauer: " + ParkingGarage.GetParkingDuration(parkerId)+ " min. " +
+        display = "Parkdauer: " + ParkingGarage.GetParkingDuration(parkerId)+ " Std. " +
             "Gebühr: " + parkingCost.ToString("0.00") + " €";
         payBtnDisabled = false;
 
@@ -123,7 +123,7 @@
         return seasonParkers;
     }
 
-    private float GetParkingCost() 
+    private double GetParkingCost() 
     {
         parkingCost = ParkingGarage.GetParkingCost(parkerId);
         return parkingCost;
